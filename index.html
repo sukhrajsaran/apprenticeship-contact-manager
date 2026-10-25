@@ -14,8 +14,9 @@
         textarea { height: 120px; resize: vertical; }
         button { background-color: #0b57d0; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; }
         button:hover { background-color: #0842a0; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
         .output-box { margin-top: 20px; padding: 15px; background: #f0f4f9; border-left: 5px solid #0b57d0; border-radius: 4px; display: none; }
-        pre { background: #1e1e1e; color: #fff; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; }
+        pre { background: #1e1e1e; color: #fff; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
 
         <div class="form-group">
             <label for="jobDesc">Paste Job Description Text</label>
-            <textarea id="jobDesc" placeholder="Paste the job description text here..."></textarea>
+            <textarea id="jobDesc" placeholder="Paste the full job text here..."></textarea>
         </div>
 
         <button id="generateBtn" onclick="generateApplication()">Generate Tailored Application Package</button>
@@ -62,7 +63,7 @@
             const btn = document.getElementById('generateBtn');
 
             if (!apiKey) { alert('Please enter your Google Gemini API key.'); return; }
-            if (!jobDesc) { alert('Please paste the job description.'); return; }
+            if (!jobDesc) { alert('Please paste the job description text.'); return; }
 
             localStorage.setItem('gemini_api_key', apiKey);
             
@@ -104,11 +105,12 @@ Please generate two clear sections:
 1. A professional, highly compelling cover letter and email draft addressed to the hiring manager. It must organically weave together his Class 4 license, STMS-B safety compliance, current Class 2 manual truck operations with Ventia, and his 5 years of rigorous fault-finding experience as an Optical Fibre Technician.
 2. A clean, error-free Python script using the fpdf2 library (compatible with Carnets on iOS, using self.epw for widths) that generates a formatted PDF CV tailored specifically to win this role.`;
 
-            try {
-                // Direct REST API call using gemini-3.8-flash
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+            // Using CORS proxy wrapper to prevent mobile Safari blocking
+            const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
 
-                const response = await fetch(url, {
+            try {
+                const response = await fetch(proxyUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -121,12 +123,13 @@ Please generate two clear sections:
                 const data = await response.json();
 
                 if (data.error) {
-                    alert('Gemini Error: ' + data.error.message);
+                    alert('Gemini API Error: ' + (data.error.message || JSON.stringify(data.error)));
                     return;
                 }
 
                 if (!data.candidates || !data.candidates[0].content) {
-                    throw new Error('Invalid response structure received from Gemini.');
+                    alert('Unexpected response format received.');
+                    return;
                 }
 
                 const responseText = data.candidates[0].content.parts[0].text;
@@ -136,7 +139,7 @@ Please generate two clear sections:
                 document.getElementById('pythonScript').textContent = responseText;
 
             } catch (err) {
-                alert('Connection error: ' + err.message);
+                alert('Connection Error: ' + err.message);
             } finally {
                 btn.innerText = "Generate Tailored Application Package";
                 btn.disabled = false;
