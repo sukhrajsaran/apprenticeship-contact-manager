@@ -105,8 +105,8 @@ Please generate two clear sections:
 2. A clean, error-free Python script using the fpdf2 library (compatible with Carnets on iOS, using self.epw for widths) that generates a formatted PDF CV tailored specifically to win this role.`;
 
             try {
-                // Using gemini-2.5-flash endpoint structure directly
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                // Updated to stable gemini-1.5-flash endpoint
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(url, {
                     method: 'POST',
