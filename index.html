@@ -69,7 +69,6 @@
             btn.innerText = "Generating with Gemini...";
             btn.disabled = true;
 
-            // Complete user profile background pulled from our conversation history
             const userProfile = `
             Candidate Name: Sukhraj Singh
             Location: Thames, New Zealand
@@ -106,7 +105,8 @@ Please generate two clear sections:
 2. A clean, error-free Python script using the fpdf2 library (compatible with Carnets on iOS, using self.epw for widths) that generates a formatted PDF CV tailored specifically to win this role.`;
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // Using gemini-2.5-flash endpoint structure directly
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -127,6 +127,10 @@ Please generate two clear sections:
                     return;
                 }
 
+                if (!data.candidates || !data.candidates[0].content) {
+                    throw new Error('Invalid response structure from Gemini API.');
+                }
+
                 const responseText = data.candidates[0].content.parts[0].text;
 
                 outputBox.style.display = 'block';
@@ -134,7 +138,7 @@ Please generate two clear sections:
                 document.getElementById('pythonScript').textContent = responseText;
 
             } catch (err) {
-                alert('Connection error. Check your internet or API key.');
+                alert('Connection error: ' + err.message);
             } finally {
                 btn.innerText = "Generate Tailored Application Package";
                 btn.disabled = false;
