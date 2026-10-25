@@ -118,8 +118,9 @@ Please generate two clear sections:
                 // Initialize official Google Gen AI SDK
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
+                // Updated to gemini-3.8-flash as specified by Google API
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.8-flash',
                     contents: promptText,
                 });
 
